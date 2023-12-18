@@ -23,7 +23,7 @@ list(APPEND DTS_ROOT
 set(BOARD_ROOT ${CMAKE_CURRENT_LIST_DIR})
 set(BOARD xiaomi_bt_sensor)
 
-include($ENV{ZEPHYR_BASE}/cmake/app/boilerplate.cmake NO_POLICY_SCOPE)
+find_package(Zephyr)
 
 
 project(onoff-app)
