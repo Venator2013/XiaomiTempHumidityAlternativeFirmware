@@ -9,12 +9,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <zephyr.h>
-#include <init.h>
-#include <drivers/gpio.h>
-#include <drivers/adc.h>
-#include <drivers/sensor.h>
-#include <logging/log.h>
+#include <zephyr/drivers/adc.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/drivers/sensor.h>
+#include <zephyr/init.h>
+#include <zephyr/kernel.h>
+#include <zephyr/logging/log.h>
 
 #include "battery.h"
 
@@ -22,22 +22,25 @@ LOG_MODULE_REGISTER(battery, LOG_LEVEL_INF);
 
 #define BATTERY_ADC_GAIN ADC_GAIN_1_3
 
-struct io_channel_config {
+struct io_channel_config
+{
 	const char *label;
-	u8_t channel;
+	uint8_t channel;
 };
 
-struct gpio_channel_config {
+struct gpio_channel_config
+{
 	const char *label;
-	u8_t pin;
-	u8_t flags;
+	uint8_t pin;
+	uint8_t flags;
 };
 
-struct divider_config {
+struct divider_config
+{
 	const struct io_channel_config io_channel;
 	const struct gpio_channel_config power_gpios;
-	const u32_t output_ohm;
-	const u32_t full_ohm;
+	const uint32_t output_ohm;
+	const uint32_t full_ohm;
 };
 
 static const struct divider_config divider_config = {
@@ -49,27 +52,28 @@ static const struct divider_config divider_config = {
 	.full_ohm = DT_VOLTAGE_DIVIDER_VBATT_FULL_OHMS,
 };
 
-struct divider_data {
+struct divider_data
+{
 	struct device *adc_device;
 	struct device *gpio_device;
 	struct adc_channel_cfg adc_config;
 	struct adc_sequence adc_sequence;
-	s16_t raw;
+	int16_t raw;
 };
 static struct divider_data divider_data;
 
 const struct battery_level_point alkaline_level_point[] = {
-	{ 10000, 1490 },
-	{ 9000, 1350 },
-	{ 8000, 1270 },
-	{ 7000, 1200 },
-	{ 6000, 1160 },
-	{ 5000, 1120 },
-	{ 4000, 1100 },
-	{ 3000, 1080 },
-	{ 2000, 1040 },
-	{ 1000, 980 },
-	{ 0, 620 },
+	{10000, 1490},
+	{9000, 1350},
+	{8000, 1270},
+	{7000, 1200},
+	{6000, 1160},
+	{5000, 1120},
+	{4000, 1100},
+	{3000, 1080},
+	{2000, 1040},
+	{1000, 980},
+	{0, 620},
 };
 
 static int divider_setup(void)
@@ -82,22 +86,26 @@ static int divider_setup(void)
 	int rc;
 
 	divider_data.adc_device = device_get_binding(io_channel->label);
-	if (divider_data.adc_device == NULL) {
+	if (divider_data.adc_device == NULL)
+	{
 		LOG_ERR("Failed to get ADC %s", io_channel->label);
 		return -ENOENT;
 	}
 
-	if (gpio_config->label) {
+	if (gpio_config->label)
+	{
 		divider_data.gpio_device = device_get_binding(gpio_config->label);
-		if (divider_data.gpio_device == NULL) {
+		if (divider_data.gpio_device == NULL)
+		{
 			LOG_ERR("Failed to get GPIO %s", gpio_config->label);
 			return -ENOENT;
 		}
 		rc = gpio_pin_configure(divider_data.gpio_device, gpio_config->pin,
-					GPIO_OUTPUT_INACTIVE | gpio_config->flags);
-		if (rc != 0) {
+								GPIO_OUTPUT_INACTIVE | gpio_config->flags);
+		if (rc != 0)
+		{
 			LOG_ERR("Failed to control feed %s.%u: %d",
-				gpio_config->label, gpio_config->pin, rc);
+					gpio_config->label, gpio_config->pin, rc);
 			return rc;
 		}
 	}
@@ -126,14 +134,15 @@ static int divider_setup(void)
 		.buffer_size = sizeof(divider_data.raw),
 		.oversampling = 0,
 		.calibrate = true,
-	    .resolution = 10,
+		.resolution = 10,
 	};
 
-	*channel_cfg = (struct adc_channel_cfg){
-        .acquisition_time = ADC_ACQ_TIME_DEFAULT,
+	*channel_cfg = (struct adc_channel_cfg)
+	{
+		.acquisition_time = ADC_ACQ_TIME_DEFAULT,
 		.gain = BATTERY_ADC_GAIN,
 		.reference = ADC_REF_INTERNAL,
-        .channel_id = 0,
+		.channel_id = 0,
 #if CONFIG_ADC_CONFIGURABLE_INPUTS
 		.input_positive = BIT(io_channel->channel), // Why is this a bit value?
 #endif
@@ -143,7 +152,7 @@ static int divider_setup(void)
 #endif /* CONFIG_ADC_var */
 
 	rc = adc_channel_setup(divider_data.adc_device, channel_cfg);
-    Z_LOG(rc < 0 ? LOG_LEVEL_ERR : LOG_LEVEL_DBG, "Setup AIN%u got %d", io_channel->channel, rc);
+	Z_LOG(rc < 0 ? LOG_LEVEL_ERR : LOG_LEVEL_DBG, "Setup AIN%u got %d", io_channel->channel, rc);
 
 	return rc;
 }
@@ -165,12 +174,14 @@ int battery_measure_enable(bool enable)
 {
 	int rc = -ENOENT;
 
-	if (battery_ok) {
+	if (battery_ok)
+	{
 		const struct divider_data *data = &divider_data;
 		const struct gpio_channel_config *gpio_config = &divider_config.power_gpios;
 
 		rc = 0;
-		if (data->gpio_device) {
+		if (data->gpio_device)
+		{
 			rc = gpio_pin_set(data->gpio_device, gpio_config->pin, enable);
 		}
 	}
@@ -181,23 +192,25 @@ int battery_sample(void)
 {
 	int rc = -ENOENT;
 
-	if (battery_ok) {
+	if (battery_ok)
+	{
 		struct divider_data *data = &divider_data;
 		const struct divider_config *config = &divider_config;
 		struct adc_sequence *sequence = &data->adc_sequence;
 
 		rc = adc_read(data->adc_device, sequence);
 		sequence->calibrate = false;
-		if (rc == 0) {
-			s32_t val = data->raw;
+		if (rc == 0)
+		{
+			int32_t val = data->raw;
 
 			adc_raw_to_millivolts(adc_ref_internal(data->adc_device),
-					      data->adc_config.gain,
-					      sequence->resolution,
-					      &val);
-			rc = val * (u64_t)config->full_ohm / config->output_ohm;
+								  data->adc_config.gain,
+								  sequence->resolution,
+								  &val);
+			rc = val * (uint64_t)config->full_ohm / config->output_ohm;
 			LOG_DBG("raw %u ~ %u mV => %d mV",
-				data->raw, val, rc);
+					data->raw, val, rc);
 		}
 	}
 
@@ -205,20 +218,22 @@ int battery_sample(void)
 }
 
 unsigned int battery_level_pptt(unsigned int batt_mV,
-				const struct battery_level_point *curve)
+								const struct battery_level_point *curve)
 {
 	const struct battery_level_point *pb = curve;
 
-	if (batt_mV >= pb->lvl_mV) {
+	if (batt_mV >= pb->lvl_mV)
+	{
 		/* Measured voltage above highest point, cap at maximum. */
 		return pb->lvl_pptt;
 	}
 	/* Go down to the last point at or below the measured voltage. */
-	while ((pb->lvl_pptt > 0)
-	       && (batt_mV < pb->lvl_mV)) {
+	while ((pb->lvl_pptt > 0) && (batt_mV < pb->lvl_mV))
+	{
 		++pb;
 	}
-	if (batt_mV < pb->lvl_mV) {
+	if (batt_mV < pb->lvl_mV)
+	{
 		/* Below lowest point, cap at minimum */
 		return pb->lvl_pptt;
 	}
@@ -226,8 +241,5 @@ unsigned int battery_level_pptt(unsigned int batt_mV,
 	/* Linear interpolation between below and above points. */
 	const struct battery_level_point *pa = pb - 1;
 
-	return pb->lvl_pptt
-	       + ((pa->lvl_pptt - pb->lvl_pptt)
-		  * (batt_mV - pb->lvl_mV)
-		  / (pa->lvl_mV - pb->lvl_mV));
+	return pb->lvl_pptt + ((pa->lvl_pptt - pb->lvl_pptt) * (batt_mV - pb->lvl_mV) / (pa->lvl_mV - pb->lvl_mV));
 }

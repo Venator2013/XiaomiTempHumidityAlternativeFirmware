@@ -2,6 +2,15 @@
 
 cmake_minimum_required(VERSION 3.13.1)
 
+# Must define custom board before including boilerplate
+set(BOARD_ROOT ${CMAKE_CURRENT_LIST_DIR})
+set(BOARD xiaomi_bt_sensor)
+
+find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
+
+
+project(xiaomi_bt_sensor_alternative_firmware)
+
 if(USE_DEV_BOARD)
   set(CONF_FILE prj.conf;boards/xiaomi_bt_sensor_dev.conf)
   set(DTC_OVERLAY_FILE boards/xiaomi_bt_sensor_dev.overlay)
@@ -19,14 +28,7 @@ list(APPEND SYSCALL_INCLUDE_DIRS
 list(APPEND DTS_ROOT
   ${CMAKE_CURRENT_SOURCE_DIR}/drivers/BU9795/zephyr)
 
-# Must define custom board before including boilerplate
-set(BOARD_ROOT ${CMAKE_CURRENT_LIST_DIR})
-set(BOARD xiaomi_bt_sensor)
 
-find_package(Zephyr)
-
-
-project(onoff-app)
 
 FILE(GLOB app_sources src/*.c)
 target_sources(app PRIVATE ${app_sources})

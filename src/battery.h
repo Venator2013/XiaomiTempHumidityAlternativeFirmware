@@ -29,12 +29,13 @@ int battery_sample(void);
  * #lvl_pptt set to zero.  Both #lvl_pptt and #lvl_mV should be
  * monotonic decreasing within the sequence.
  */
-struct battery_level_point {
+struct battery_level_point
+{
 	/** Remaining life at #lvl_mV. */
-	u16_t lvl_pptt;
+	uint16_t lvl_pptt;
 
 	/** Battery voltage at #lvl_pptt remaining life. */
-	u16_t lvl_mV;
+	uint16_t lvl_mV;
 };
 
 extern const struct battery_level_point alkaline_level_point[];
@@ -50,6 +51,6 @@ extern const struct battery_level_point alkaline_level_point[];
  * thousand.
  */
 unsigned int battery_level_pptt(unsigned int batt_mV,
-				const struct battery_level_point *curve);
+								const struct battery_level_point *curve);
 
 #endif /* APPLICATION_BATTERY_H_ */

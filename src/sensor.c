@@ -1,16 +1,16 @@
-#include <zephyr.h>
-#include <device.h>
-#include <init.h>
-#include <drivers/sensor.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/sensor.h>
+#include <zephyr/init.h>
+#include <zephyr/kernel.h>
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(sensor, LOG_LEVEL_INF);
 
 struct device *dev_sensor = NULL;
 
 int update_sensor(struct sensor_value *temp, struct sensor_value *hum)
 {
-    if(dev_sensor == NULL)
+    if (dev_sensor == NULL)
     {
         return -ENOENT;
     }
@@ -33,7 +33,7 @@ int update_sensor(struct sensor_value *temp, struct sensor_value *hum)
 
     LOG_DBG("Getting SENSOR_CHAN_HUMIDITY");
     ret = sensor_channel_get(dev_sensor, SENSOR_CHAN_HUMIDITY, hum);
-    if(ret)
+    if (ret)
     {
         LOG_ERR("Could not get SENSOR_CHAN_HUMIDITY from %s, errno: %d", dev_sensor->config->name, ret);
         return ret;
@@ -49,7 +49,8 @@ static int sensor_init(struct device *dev)
     ARG_UNUSED(dev);
 
     dev_sensor = device_get_binding(DT_ALIAS_SENSOR0_LABEL);
-    if (dev_sensor == NULL) {
+    if (dev_sensor == NULL)
+    {
         LOG_ERR("Didn't find %s device", DT_ALIAS_SENSOR0_LABEL);
     }
 
