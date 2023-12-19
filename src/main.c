@@ -12,9 +12,9 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(main, LOG_LEVEL_DBG);
 
-#include "battery.h"
-#include "bluetooth.h"
-#include "display.h"
+// #include "battery.h"
+// #include "bluetooth.h"
+// #include "display.h"
 #include "sensor.h"
 
 static bool allow_bonding = false;
@@ -73,7 +73,7 @@ void main(void)
     }
     else
     {
-        bluetooth_ready();
+        // bluetooth_ready();
         bluetooth_enabled = true;
     }
 
@@ -81,7 +81,7 @@ void main(void)
 
     struct sensor_value temp, hum;
 
-    display_set_symbols(DISPLAY_SYMBOL_HORIZONTAL_RULE);
+    // display_set_symbols(DISPLAY_SYMBOL_HORIZONTAL_RULE);
 
     while (1)
     {
@@ -89,47 +89,47 @@ void main(void)
         {
             if (allow_bonding)
             {
-                bluetooth_set_bonding(true);
+                // bluetooth_set_bonding(true);
                 allow_bonding = false;
             }
 
-            if (bluetooth_get_bonding() && (loop_count % 2 == 0))
-            {
-                display_clear_symbols(DISPLAY_SYMBOL_BLUETOOTH);
-            }
-            else
-            {
-                display_set_symbols(DISPLAY_SYMBOL_BLUETOOTH);
-            }
+            /* if (bluetooth_get_bonding() && (loop_count % 2 == 0))
+             {
+                 // display_clear_symbols(DISPLAY_SYMBOL_BLUETOOTH);
+             }
+             else
+             {
+                 // display_set_symbols(DISPLAY_SYMBOL_BLUETOOTH);
+             }*/
         }
-        int batt_mV = battery_sample();
+        /* int batt_mV = battery_sample();
 
-        if (batt_mV >= 0)
-        {
-            int batt_pptt = battery_level_pptt(batt_mV, alkaline_level_point) / 100;
-            LOG_INF("Battery: %d%% (%d.%03dV)", batt_pptt, batt_mV / 1000, batt_mV % 1000);
+         if (batt_mV >= 0)
+         {
+             int batt_pptt = battery_level_pptt(batt_mV, alkaline_level_point) / 100;
+             LOG_INF("Battery: %d%% (%d.%03dV)", batt_pptt, batt_mV / 1000, batt_mV % 1000);
 
-            display_set_battery(batt_pptt);
-            bluetooth_update_battery(batt_pptt);
-        }
-        else
-        {
-            LOG_ERR("Failed to read battery voltage: %d", batt_mV);
-        }
+             display_set_battery(batt_pptt);
+             bluetooth_update_battery(batt_pptt);
+         }
+         else
+         {
+             LOG_ERR("Failed to read battery voltage: %d", batt_mV);
+         }
 
-        if (update_sensor(&temp, &hum) == 0)
-        {
-            LOG_INF("Sensor: %d.%d°C, %d.%d%%RH",
-                    temp.val1, temp.val2 / 100000,
-                    hum.val1, hum.val2 / 100000);
+         if (update_sensor(&temp, &hum) == 0)
+         {
+             LOG_INF("Sensor: %d.%d°C, %d.%d%%RH",
+                     temp.val1, temp.val2 / 100000,
+                     hum.val1, hum.val2 / 100000);
 
-            display_set_symbols(DISPLAY_SYMBOL_CELSIUS | DISPLAY_SYMBOL_HUMIDITY);
-            display_set_temperature(&temp);
-            display_set_humidity(&hum);
+             display_set_symbols(DISPLAY_SYMBOL_CELSIUS | DISPLAY_SYMBOL_HUMIDITY);
+             display_set_temperature(&temp);
+             display_set_humidity(&hum);
 
-            bluetooth_update_temperature((temp.val1 * 100) + (temp.val2 / 10000));
-            bluetooth_update_humidity((hum.val1 * 100) + (hum.val2 / 10000));
-        }
+             bluetooth_update_temperature((temp.val1 * 100) + (temp.val2 / 10000));
+             bluetooth_update_humidity((hum.val1 * 100) + (hum.val2 / 10000));
+         }*/
 
         k_msleep(1000);
         loop_count++;

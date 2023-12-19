@@ -8,27 +8,19 @@ set(BOARD xiaomi_bt_sensor)
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
-
 project(xiaomi_bt_sensor_alternative_firmware)
 
-if(USE_DEV_BOARD)
-  set(CONF_FILE prj.conf;boards/xiaomi_bt_sensor_dev.conf)
-  set(DTC_OVERLAY_FILE boards/xiaomi_bt_sensor_dev.overlay)
-endif()
+#list(APPEND ZEPHYR_EXTRA_MODULES
+#  ${CMAKE_CURRENT_SOURCE_DIR}/drivers/BU9795
+#  )
 
-list(APPEND ZEPHYR_EXTRA_MODULES
-  ${CMAKE_CURRENT_SOURCE_DIR}/drivers/BU9795
-  )
-
-list(APPEND SYSCALL_INCLUDE_DIRS
-  ${CMAKE_CURRENT_SOURCE_DIR}/drivers/BU9795/zephyr
-  )
+#list(APPEND SYSCALL_INCLUDE_DIRS
+#  ${CMAKE_CURRENT_SOURCE_DIR}/drivers/BU9795/zephyr
+#  )
 
 # Because our out of tree driver has it's own bindings, we need to include it in the DTS_ROOT
-list(APPEND DTS_ROOT
-  ${CMAKE_CURRENT_SOURCE_DIR}/drivers/BU9795/zephyr)
-
-
+#list(APPEND DTS_ROOT
+#  ${CMAKE_CURRENT_SOURCE_DIR}/drivers/BU9795/zephyr)
 
 FILE(GLOB app_sources src/*.c)
 target_sources(app PRIVATE ${app_sources})
